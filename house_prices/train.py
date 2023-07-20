@@ -8,6 +8,8 @@ from sklearn.metrics import mean_squared_log_error
 from house_prices.preprocess import data_preprocessing
 from joblib import dump
 
+MODEL_PATH = "../models/model.joblib"
+
 
 def compute_rmsle(y_true: np.ndarray, y_pred: np.ndarray,
                   precision: int = 3) -> float:
@@ -26,6 +28,7 @@ def evaluate_performance(y_pred: np.ndarray, y_true: np.ndarray,
     rmse = compute_rmsle(y_true, y_pred, precision)
     key = comment+"_rmse"
 
+    return dict({key: rmse})
 
 
 def data_split_test_train_validation(data: pd.DataFrame, test_size: int = 0.2,
@@ -51,6 +54,7 @@ def build_model(data: pd.DataFrame) -> dict[str, str]:
 
     # split data into Train, Test, and Validation
     X_train, X_test, X_validation, y_train, y_test, y_validation = \
+        data_split_test_train_validation(data)
 
     # Preprocessing(cleaning data and training encoders,scalars)
     X_train = data_preprocessing(X_train, is_test=False)
@@ -65,7 +69,8 @@ def build_model(data: pd.DataFrame) -> dict[str, str]:
     LR_model = LinearRegression()
 
     # Train model
-   
+    LR_model.fit(X_train, y_train)
+    dump(LR_model, MODEL_PATH)
 
     # Validation-set evaluation
     y_valid_predictions = LR_model.predict(X_validation)
